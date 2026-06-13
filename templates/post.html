@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Post</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<a href="javascript:history.back()">⬅ Back</a>
+
+<div class="post">
+
+    <h3>{{ post.username }}</h3>
+    <small>{{ post.timestamp }}</small>
+
+    <p>{{ post.content }}</p>
+
+    {% if post.image %}
+        <img src="{{ url_for('uploaded_file', filename=post.image) }}">
+    {% endif %}
+
+    <p>❤️ {{ post.likes }} likes</p>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Users</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h1>Search Results</h1>
+
+<a href="/">⬅ Back Home</a>
+
+<hr>
+
+{% if users %}
+
+    {% for user in users %}
+
+        <div class="user-card">
+
+            <a href="/profile/{{ user.username }}">
+                {{ user.username }}
+            </a>
+
+        </div>
+
+    {% endfor %}
+
+{% else %}
+
+    <p>No users found.</p>
+
+{% endif %}
+
+</body>
+</html>
+

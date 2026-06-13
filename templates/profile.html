@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ username }}'s Profile</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="profile-header">
+
+    {% if user and user.profile_pic %}
+        <img
+            src="{{ url_for('uploaded_file', filename=user.profile_pic) }}"
+            class="profile-pic">
+    {% endif %}
+
+    <h1>{{ username }}</h1>
+
+    <p class="bio">
+        {{ user.bio }}
+    </p>
+     
+<p>
+    <b>{{ followers }}</b> Followers |
+    <b>{{ following }}</b> Following
+</p>
+
+{% if session['user'] != username %}
+
+    {% if is_following %}
+        <a href="/unfollow/{{ username }}">
+            <button>Unfollow</button>
+        </a>
+    {% else %}
+        <a href="/follow/{{ username }}">
+            <button>Follow</button>
+        </a>
+    {% endif %}
+
+{% endif %}
+
+    <p>
+        <b>{{ posts|length }}</b> Posts
+    </p>
+
+    {% if session['user'] == username %}
+
+        <a href="/edit_profile">
+            <button>Edit Profile</button>
+        </a>
+
+        <form method="POST"
+              action="/upload_profile_pic"
+              enctype="multipart/form-data">
+
+            <input type="file" name="profile_pic">
+            <button type="submit">Upload Profile Picture</button>
+
+        </form>
+
+    {% endif %}
+
+</div>
+
+<hr>
+
+<!-- POSTS GRID -->
+<div class="post-grid">
+
+{% for post in posts %}
+
+<a href="/post/{{ post.id }}" class="post-link">
+    <div class="post">
+
+        <small>{{ post.timestamp }}</small>
+        <p>{{ post.content }}</p>
+
+        {% if post.image %}
+            <img src="{{ url_for('uploaded_file', filename=post.image) }}">
+        {% endif %}
+
+        <p>❤️ {{ post.likes }} likes</p>
+
+        {% if session['user'] == post.username %}
+
+    <a href="/edit_post/{{ post.id }}">
+        <button>Edit</button>
+    </a>
+
+    <a href="/delete_post/{{ post.id }}"
+       onclick="return confirm('Delete this post?')">
+        <button>Delete</button>
+    </a>
+
+{% endif %}
+
+    </div>
+</a>
+
+{% endfor %}
+
+</div>
+
+</body>
+</html>
+

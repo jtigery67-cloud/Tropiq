@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Profile</title>
+</head>
+<body>
+
+<h1>Edit Profile</h1>
+
+<form method="POST">
+
+    <label>Username:</label>
+    <input
+        type="text"
+        name="username"
+        value="{{ user.username }}"
+        required>
+
+    <br><br>
+
+    <label>New Password:</label>
+    <input
+        type="password"
+        name="password"
+        placeholder="Leave blank to keep current password">
+
+    <br><br>
+
+<label>Bio:</label>
+
+<textarea
+    name="bio"
+    rows="4"
+    cols="40">{{ user.bio }}</textarea>
+
+<br><br>
+    <button type="submit">
+        Save Changes
+    </button>
+
+</form>
+
+<br>
+
+<a href="/profile/{{ user.username }}">
+    Back to Profile
+</a>
+
+</body>
+</html>

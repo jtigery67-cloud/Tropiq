@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tropiq</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<header>
+    <h1>Tropiq</h1>
+    <p>Connect Across the Caribbean</p>
+
+    <form action="/search" method="GET">
+
+        <input
+            type="text"
+            name="q"
+            placeholder="Search Tropiq users...">
+
+        <button type="submit">
+            Search
+        </button>
+
+    </form>
+
+    <p>Logged in as: {{ session['user'] }}</p>
+
+    <button onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
+
+    <a href="/logout">
+        <button>Logout</button>
+    </a>
+</header>
+
+<hr>
+
+<form method="POST" action="/post" enctype="multipart/form-data">
+
+    <input
+        type="text"
+        name="content"
+        placeholder="What's on your mind?"
+        required>
+
+    <input type="file" name="image">
+
+    <button type="submit">Post</button>
+
+</form>
+
+<!-- POSTS -->
+{% for post in posts %}
+<div class="post">
+
+    <h3>
+        <a href="/profile/{{ post.username }}">
+            {{ post.username }}
+        </a>
+    </h3>
+
+    <small>{{ post.timestamp }}</small>
+
+    <p>{{ post.content }}</p>
+
+    {% if post.image %}
+        <img src="/uploads/{{ post.image }}">
+    {% endif %}
+
+    <!-- STEP 2: LIKE BUTTON -->
+    <a href="/like/{{ post.id }}"
+       class="like-btn"
+       data-id="{{ post.id }}">
+
+        {% if post.id in liked_post_ids %}
+            ❤️ {{ post.likes }}
+        {% else %}
+            🤍 {{ post.likes }}
+        {% endif %}
+
+    </a>
+
+    <form action="/comment/{{ post.id }}" method="POST">
+        <input type="text" name="comment" placeholder="Write a comment">
+        <button type="submit">Comment</button>
+    </form>
+
+    <ul>
+        {% for comment in post.comments %}
+            <li>
+                <b>{{ comment.username }}:</b> {{ comment.text }}
+            </li>
+        {% endfor %}
+    </ul>
+
+</div>
+{% endfor %}
+
+<!-- DARK MODE -->
+<script>
+function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+
+    if (document.body.classList.contains("dark-mode")) {
+        localStorage.setItem("theme", "dark");
+    } else {
+        localStorage.setItem("theme", "light");
+    }
+}
+
+(function () {
+    let theme = localStorage.getItem("theme");
+
+    if (theme === "dark") {
+        document.body.classList.add("dark-mode");
+    }
+})();
+</script>
+
+<!-- SOCKETIO -->
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<!-- STEP 3: REAL-TIME UPDATES -->
+<script>
+const socket = io();
+
+socket.on("like_update", function(data) {
+
+    const btn = document.querySelector(
+        `.like-btn[data-id='${data.post_id}']`
+    );
+
+    if (!btn) return;
+
+    if (data.liked) {
+        btn.innerHTML = `❤️ ${data.likes}`;
+    } else {
+        btn.innerHTML = `🤍 ${data.likes}`;
+    }
+});
+
+</script>
+
+</body>
+</html>
