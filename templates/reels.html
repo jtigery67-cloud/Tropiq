@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Tropiq Reels</h1>
+
+{% for post in posts %}
+
+<video controls width="400">
+    <source src="/uploads/{{ post.video }}">
+</video>
+
+<p>{{ post.username }}</p>
+<p>{{ post.content }}</p>
+
+<hr>
+
+{% endfor %}
+
+</body>
+</html>

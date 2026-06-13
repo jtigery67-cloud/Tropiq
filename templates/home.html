@@ -43,7 +43,7 @@
         placeholder="What's on your mind?"
         required>
 
-    <input type="file" name="image">
+    <input type="file" name="media">
 
     <button type="submit">Post</button>
 
@@ -66,6 +66,20 @@
     {% if post.image %}
         <img src="/uploads/{{ post.image }}">
     {% endif %}
+
+{% if post.video %}
+    <video controls width="300">
+        <source src="/uploads/{{ post.video }}">
+    </video>
+{% endif %}
+
+{% if session["user"] == post.username %}
+
+    <a href="/delete_post/{{ post.id }}">
+        <button>🗑️ Delete</button>
+    </a>
+
+{% endif %}
 
     <!-- STEP 2: LIKE BUTTON -->
     <a href="/like/{{ post.id }}"

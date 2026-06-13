@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_socketio import SocketIO, emit
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, instance_path=os.path.join(os.getcwd(), "instance"))
 
 app.config["SECRET_KEY"] = "secret123"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
@@ -18,11 +18,9 @@ UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 db = SQLAlchemy(app)
-
-socketio = SocketIO(app)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
 
@@ -37,6 +35,7 @@ class Post(db.Model):
     username = db.Column(db.String(50))
     content = db.Column(db.String(300))
     image = db.Column(db.String(200))
+    video = db.Column(db.String(200), default="")
     likes = db.Column(db.Integer, default=0)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -103,6 +102,10 @@ def home():
         username=session["user"]
     ).first()
 
+    if current_user is None:
+        session.clear()
+        return redirect("/login")
+
     posts = Post.query.order_by(Post.id.desc()).all()
 
     liked_posts = Like.query.filter_by(
@@ -116,7 +119,6 @@ def home():
         posts=posts,
         liked_post_ids=liked_post_ids
     )
-
 @app.route("/profile/<username>")
 def profile(username):
 
@@ -162,7 +164,7 @@ def post():
     username = session.get("user")
     content = request.form["content"]
 
-    image = request.files["image"]
+    image = request.files.get("image")
     filename = ""
 
     if image and image.filename:
@@ -185,7 +187,6 @@ def post():
     })
 
     return redirect("/")
-
 # ---------------- LIKE ----------------
 @app.route("/like/<int:post_id>")
 def like(post_id):
@@ -364,23 +365,6 @@ def view_post(post_id):
 
     return render_template("post.html", post=post)
 
-@app.route("/delete_post/<int:post_id>")
-def delete_post(post_id):
-
-    if "user" not in session:
-        return redirect("/login")
-
-    post = Post.query.get_or_404(post_id)
-
-    # only owner can delete
-    if post.username != session["user"]:
-        return "Not allowed"
-
-    db.session.delete(post)
-    db.session.commit()
-
-    return redirect(request.referrer or "/")
-
 @app.route("/edit_post/<int:post_id>", methods=["GET", "POST"])
 def edit_post(post_id):
 
@@ -470,6 +454,33 @@ def search():
         "search.html",
         users=users,
         query=query
+    )
+
+@app.route("/delete_post/<int:post_id>")
+def delete_post(post_id):
+
+    if "user" not in session:
+        return redirect("/login")
+
+    post = Post.query.get_or_404(post_id)
+
+    if post.username != session["user"]:
+        return "Not authorized"
+
+    db.session.delete(post)
+    db.session.commit()
+
+    return redirect("/")
+
+@app.route("/reels")
+def reels():
+    posts = Post.query.filter(
+        Post.video != ""
+    ).order_by(Post.id.desc()).all()
+
+    return render_template(
+        "reels.html",
+        posts=posts
     )
 
 if __name__ == "__main__":
